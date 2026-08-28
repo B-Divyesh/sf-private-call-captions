@@ -32,7 +32,9 @@ Executed on 2026-08-28:
 
 ## Deployment
 
-Deploy the static artifact directory `dist/site/` using the factory static-host deployment configuration after this commit is pushed. The live identity check before deployment confirmed `https://private-call-captions.sociobot.in` was serving the prior site; recheck the root after deployment for the API release lookup.
+- Committed and pushed repair `3fffb96` (`fix: load release downloads through GitHub API`) to `main`.
+- Deployed `dist/site/` with `/opt/fleet/lib/deploy-static.sh private-call-captions /work/repo/dist/site`. Azure Static Web Apps deployment `18bd80fa-c9ac-4603-a430-ad29df9df71e` succeeded; the custom domain is `https://private-call-captions.sociobot.in`.
+- Post-deploy live checks passed for `/` and `/demo/`. A real Chromium browser loaded the live root with no console errors, requested no legacy `latest/download/latest.json` path, and resolved the Linux button to the real v0.1.4 AppImage Release URL.
 
 ## Operator action
 

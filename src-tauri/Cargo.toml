@@ -1,6 +1,6 @@
 [package]
 name = "private-call-captions"
-version = "0.1.1"
+version = "0.1.2"
 description = "Local microphone-only captions"
 authors = ["Param Factory"]
 edition = "2021"

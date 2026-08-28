@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://private-call-captions.sociobot.in/sitemap.xml

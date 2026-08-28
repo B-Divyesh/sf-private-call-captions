@@ -32,7 +32,9 @@ npm run build            # desktop web assets -> dist/, download site -> dist/si
 
 ## Install and release
 
-The GitHub Actions release workflow runs on tags such as `v0.1.0` and produces unsigned macOS `.dmg`, Windows `.msi`/`.exe`, and Linux `.AppImage`/`.deb` assets. It also attaches `SHA256SUMS` and `latest.json` to the GitHub Release. The download site reads that manifest to choose an OS asset.
+The GitHub Actions release workflow runs on tags such as `v0.1.0` and produces unsigned macOS `.dmg`, Windows `.msi`/`.exe`, and Linux `.AppImage`/`.deb` assets. It also attaches `SHA256SUMS` and `latest.json` to the GitHub Release. The download site reads GitHub’s release metadata API to choose an OS asset.
+
+After the first site visit, the sample demo can open offline. The desktop app does not need a network request to caption a selected microphone after you choose a local model file.
 
 ```sh
 curl -fsSL https://private-call-captions.sociobot.in/install.sh | sh

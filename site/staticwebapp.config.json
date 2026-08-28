@@ -1,0 +1,8 @@
+{
+  "navigationFallback": { "rewrite": "/404.html", "exclude": ["/assets/*", "/*.css", "/*.js", "/*.webp", "/*.png", "/*.svg"] },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Content-Security-Policy": "default-src 'self'; connect-src 'self' https://api.github.com https://api.sociobot.in; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+  }
+}

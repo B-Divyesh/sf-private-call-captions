@@ -1,42 +1,44 @@
-# Private Call Captions — handoff
+# Private Call Captions — repair handoff
 
-## Delivered
+## Repair delivered
 
-- Tauri 2 desktop app with selected-microphone-only capture, 16 kHz local sample handling, Rust `whisper-rs` transcription, a model-file picker, consent guidance, correction hotkey, local TXT/CSV export, and a resizable dedicated caption window.
-- Audio is never written to disk by the app. Session text is memory-only until the user explicitly exports it. System-audio capture, cloud transcription, bots, speaker identification, recording, and automatic model downloads are absent by design.
-- Product-specific paper-cut diorama system documented in `.factory/design.md`; original generated illustration is optimised to a 136 KB WebP and retained with PNG source/prompt sidecar under `assets/src/`.
-- Static download site in `dist/site` with OS detection, release-manifest lookup, checksum-aware installer scripts, local license return/restore/once-daily verification, privacy and terms pages.
-- GitHub Actions release matrix for macOS arm64/x64, Windows, and Linux. It publishes all generated installer assets, `SHA256SUMS`, and `latest.json` via `softprops/action-gh-release`.
+- Replaced the landing-page fetch of `github.com/.../releases/latest/download/latest.json` with the CORS-enabled GitHub Releases API: `https://api.github.com/repos/B-Divyesh/sf-private-call-captions/releases/latest`.
+- The site maps API asset names to macOS Apple silicon, macOS Intel, Windows, and Linux installers. It stores successful normalized metadata in `localStorage` key `pcc:release-metadata:v1` for one hour. Installer URLs still point to GitHub Release downloads, but only as navigation targets.
+- An unavailable, malformed, rate-limited, or offline API response now produces the calm “Downloads are being published” state and a direct GitHub Releases link. JSON, storage, release lookup, service-worker registration, and license verification failure paths are caught so they do not become uncaught page errors.
+- Added focused unit and Playwright regression coverage for API-only lookup, asset mapping, cache reuse, publishing fallback, and no legacy download-manifest request.
+- Completed the static site skeleton: plain-language first screen, `/demo/`, `/privacy/`, `/terms/`, styled 404 page, route titles/canonical metadata, social preview, favicon/touch icon, robots, sitemap, CSP/static-host config, and a cache-first offline shell.
+- The demo shows a realistic three-line appointment-call sample immediately. Its only storage key is `demo:private-call-captions:sample`; reset and exit remove it. `.factory/demo.md`, `.factory/claims.json`, and `.factory/copy-audit.md` record the verification contract.
 
-## Run and verify
+## Exact verification evidence
+
+Run from a clean checkout:
 
 ```sh
 npm ci
-npm test
 npm run build
-npm run dev:desktop
+npm test
 ```
 
-Verified locally on 2026-08-28:
+Executed on 2026-08-28:
 
-- `npm test` — 2 passing tests
-- `npx tsc --noEmit` — passes
-- `npm run build` — passes; static deploy root is `dist/site/index.html`
-- Static output: largest initial JS 2.73 KB (site) / 9.43 KB (app), CSS 5.84 KB, hero WebP 136 KB; all below stated budgets.
-- `curl` smoke test confirmed app root `lang=en`, title, main landmark, and `/privacy/` HTTP 200. Build has no third-party runtime requests or CDNs.
-- Rust API calls were source-checked against the installed `whisper-rs 0.12` crate; `cargo fmt --check` and `cargo check --manifest-path src-tauri/Cargo.toml` pass after installing the normal Linux Tauri/clang/CMake build prerequisites.
+- `npm ci` — completed, 67 packages audited, 0 vulnerabilities.
+- `npm run build` — completed. The desktop web build is in `dist/`; the static deployment root is `dist/site/`.
+- `npm test` — 5 Vitest tests and 7 Playwright tests passed. Browser tests cover release success/failure, API-only lookup, demo isolation, privacy request interception, offline reload, keyboard skip-link focus, mobile 390 px actions, and axe WCAG 2 A/AA serious/critical violations.
+- `npx tsc --noEmit` — passed before the clean run.
+- `./scripts/verify-url.sh http://127.0.0.1:4173/` and `/demo/` — passed title, `lang`, exactly one `h1`, `main`, and image-alt checks.
+- Built landing assets: 5.32 KB JS (2.34 KB gzip), 5.82 KB CSS (1.94 KB gzip), and 136 KB hero WebP. No third-party fonts, scripts, or analytics are bundled.
+- Reproduction: `curl -I https://github.com/B-Divyesh/sf-private-call-captions/releases/latest/download/latest.json` returned a GitHub 302 redirect path without `Access-Control-Allow-Origin`; `curl -I https://api.github.com/repos/B-Divyesh/sf-private-call-captions/releases/latest` returned `access-control-allow-origin: *`.
+- Live release identity: GitHub API returned v0.1.4 with `latest.json`, `SHA256SUMS`, and all desktop installer asset types. Downloaded `Private.Call.Captions_0.1.4_amd64.AppImage`; SHA-256 `c9e3871d532e65d9e3682ee91926d92bb20494a054784dfc130386d393b8d906` matched its release checksum.
 
-## Known gap / operator action
+## Deployment
 
-The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1/v0.1.2 Linux bundles exposed missing runner headers, libclang, and CMake required by `whisper-rs`; the workflow now installs all three. The v0.1.4 tag triggers the corrected release workflow; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site. Its external GitHub Actions status is the remaining release verification item.
+Deploy the static artifact directory `dist/site/` using the factory static-host deployment configuration after this commit is pushed. The live identity check before deployment confirmed `https://private-call-captions.sociobot.in` was serving the prior site; recheck the root after deployment for the API release lookup.
 
-Installers are intentionally unsigned. For production signing, add these repository secrets before release:
+## Operator action
+
+Installers remain unsigned. To sign production desktop releases, provide these repository secrets and wire their Tauri signing/notarization variables in `.github/workflows/release.yml`:
 
 - `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`
 - `WINDOWS_CERT_PFX`, `WINDOWS_CERT_PASSWORD`
 
-Update the release workflow with the corresponding Tauri signing/notarization environment variables once those credentials are supplied. Until then, macOS users need right-click → Open and Windows users must review the unsigned-app warning.
-
-## Next useful step
-
-Choose and document an approved distribution path for a Whisper GGML/GGUF model (including its model-weight license and supported languages). The application intentionally requires an explicit local model path so it never performs a hidden model/audio network request.
+Until then, macOS users need right-click → Open and Windows users need to review the unsigned-app warning. The app intentionally requires a user-provided Whisper-compatible local model file; document an approved model distribution/license before promoting the app further.

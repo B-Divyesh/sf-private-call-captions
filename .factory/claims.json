@@ -1,0 +1,6 @@
+[
+  {"id":"download-detection","claim":"The download link chooses an installer for your computer.","where":"landing download action","test":"npm run test:browser -- --grep @claim:download-detection","sandbox":"built static site; mock GitHub Releases API metadata; assert the Linux installer link"},
+  {"id":"demo-sandbox","claim":"The demo uses sample captions and does not save them with real app data.","where":"demo banner","test":"npm run test:browser -- --grep @claim:demo-sandbox","sandbox":"fresh browser context at /demo/; assert realistic sample captions and demo: storage namespace only"},
+  {"id":"private-demo","claim":"The demo does not send sample captions to a data service.","where":"demo banner","test":"npm run test:browser -- --grep @claim:private-demo","sandbox":"fresh browser context at /demo/; intercept every request and allow only site assets and the listed GitHub release API"},
+  {"id":"offline-reload","claim":"The demo opens offline after the first visit.","where":"README","test":"npm run test:browser -- --grep @claim:offline-reload","sandbox":"fresh browser context visits /demo/, waits for the service worker, sets offline, and reloads"}
+]

@@ -30,7 +30,7 @@ Verified locally on 2026-08-28:
 
 `cargo check --manifest-path src-tauri/Cargo.toml` could not complete in this disposable worker because its host lacks `glib-2.0` development headers (`pkg-config` error). This is an environment dependency, not a source compile error; the release workflow uses `tauri-apps/tauri-action` on `ubuntu-22.04`, whose build environment supplies its Linux prerequisites. Run the check on a Tauri-ready workstation or CI as a final native verification.
 
-The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1 Linux bundle exposed missing runner headers; the workflow now installs the documented Tauri Linux prerequisites. The v0.1.2 tag triggers the corrected release workflow; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site.
+The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1/v0.1.2 Linux bundles exposed missing runner headers, libclang, and CMake required by `whisper-rs`; the workflow now installs all three. The v0.1.4 tag triggers the corrected release workflow; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site.
 
 Installers are intentionally unsigned. For production signing, add these repository secrets before release:
 

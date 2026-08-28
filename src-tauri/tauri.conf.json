@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Private Call Captions",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "identifier": "in.sociobot.private-call-captions",
   "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:5173", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
   "app": { "windows": [{ "title": "Private Call Captions", "width": 1120, "height": 790, "minWidth": 360, "minHeight": 570 }], "security": { "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'" } },
-  "bundle": { "active": true, "category": "Utility", "shortDescription": "Private, local microphone captions", "longDescription": "Readable captions from your selected microphone, processed locally with a Whisper-compatible model.", "targets": "all", "icon": [] }
+  "bundle": { "active": true, "category": "Utility", "shortDescription": "Private, local microphone captions", "longDescription": "Readable captions from your selected microphone, processed locally with a Whisper-compatible model.", "targets": "all", "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"] }
 }

@@ -2455,7 +2455,7 @@ dependencies = [
 
 [[package]]
 name = "private-call-captions"
-version = "0.1.0"
+version = "0.1.4"
 dependencies = [
  "serde",
  "tauri",

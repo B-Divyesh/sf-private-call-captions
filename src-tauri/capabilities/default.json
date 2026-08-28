@@ -1,0 +1,1 @@
+{"$schema":"../gen/schemas/desktop-schema.json","identifier":"default","description":"Local app permissions","windows":["main","caption"],"permissions":["core:default","dialog:default"]}

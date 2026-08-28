@@ -1,0 +1,72 @@
+name: Release desktop app
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundle:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            name: macos-arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            name: macos-x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: windows
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            name: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: ${{ matrix.target }} }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Build unsigned desktop bundles
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --target ${{ matrix.target }}
+          uploadRelease: false
+      - name: Collect installer assets
+        shell: bash
+        run: |
+          mkdir -p release
+          find src-tauri/target/${{ matrix.target }}/release/bundle -type f \( -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) -exec cp {} release/ \;
+      - uses: actions/upload-artifact@v4
+        with: { name: ${{ matrix.name }}, path: release/*, if-no-files-found: error }
+  release:
+    needs: bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: release }
+      - name: Build checksums and download manifest
+        env: { TAG: ${{ github.ref_name }}, REPO: ${{ github.repository }} }
+        run: |
+          find release -type f -exec mv {} release/ \; 2>/dev/null || true
+          find release -maxdepth 1 -type f -print0 | xargs -0 sha256sum > release/SHA256SUMS
+          python3 - <<'PY'
+          import json, os, glob
+          tag, repo = os.environ['TAG'], os.environ['REPO']; base=f'https://github.com/{repo}/releases/download/{tag}/'
+          files=[os.path.basename(x) for x in glob.glob('release/*')]
+          find=lambda needles: next((base+x for x in files if any(n.lower() in x.lower() for n in needles)), None)
+          data={'version':tag.lstrip('v'),'platforms':{'macos-arm64':{'url':find(['aarch64','.dmg']) or find(['.dmg'])},'macos-x64':{'url':find(['x64','.dmg']) or find(['.dmg'])},'windows':{'url':find(['.msi']) or find(['.exe'])},'linux':{'url':find(['.appimage']) or find(['.deb'])}}}
+          if not all(x['url'] for x in data['platforms'].values()): raise SystemExit('A required installer asset is missing')
+          open('release/latest.json','w').write(json.dumps(data,indent=2))
+          PY
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release/*

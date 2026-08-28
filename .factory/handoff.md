@@ -24,13 +24,11 @@ Verified locally on 2026-08-28:
 - `npm run build` — passes; static deploy root is `dist/site/index.html`
 - Static output: largest initial JS 2.73 KB (site) / 9.43 KB (app), CSS 5.84 KB, hero WebP 136 KB; all below stated budgets.
 - `curl` smoke test confirmed app root `lang=en`, title, main landmark, and `/privacy/` HTTP 200. Build has no third-party runtime requests or CDNs.
-- Rust API calls were source-checked against the installed `whisper-rs 0.12` crate and `cargo fmt --check` passes.
+- Rust API calls were source-checked against the installed `whisper-rs 0.12` crate; `cargo fmt --check` and `cargo check --manifest-path src-tauri/Cargo.toml` pass after installing the normal Linux Tauri/clang/CMake build prerequisites.
 
 ## Known gap / operator action
 
-`cargo check --manifest-path src-tauri/Cargo.toml` could not complete in this disposable worker because its host lacks `glib-2.0` development headers (`pkg-config` error). This is an environment dependency, not a source compile error; the release workflow uses `tauri-apps/tauri-action` on `ubuntu-22.04`, whose build environment supplies its Linux prerequisites. Run the check on a Tauri-ready workstation or CI as a final native verification.
-
-The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1/v0.1.2 Linux bundles exposed missing runner headers, libclang, and CMake required by `whisper-rs`; the workflow now installs all three. The v0.1.4 tag triggers the corrected release workflow; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site.
+The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1/v0.1.2 Linux bundles exposed missing runner headers, libclang, and CMake required by `whisper-rs`; the workflow now installs all three. The v0.1.4 tag triggers the corrected release workflow; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site. Its external GitHub Actions status is the remaining release verification item.
 
 Installers are intentionally unsigned. For production signing, add these repository secrets before release:
 

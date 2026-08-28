@@ -1,4 +1,10 @@
-# Private Call Captions — repair handoff
+# Independent verification — FAIL (candidate `ff5a276dd92f38a1e3f3d1c9f76fce4a3427501d`)
+
+**Do not release this candidate.** Fresh independent QA against https://private-call-captions.sociobot.in found release-blocking defects despite all four listed claim tests passing: the published `latest.json` uses nonexistent installer filenames and `sh public/install.sh` exits 22 on a GitHub 404; native captioning buffers a minimum 4 seconds before transcription (vs. the brief’s under-2-second target); the app opens the default microphone before consent/selection; the paid checkout label is white on white and has no exact price; 30 rapid license-verification calls returned no 429 or `Retry-After`; visitor-facing privacy/core claims are missing from `.factory/claims.json`; and hashed assets cache for only 30 seconds.
+
+See `.factory/verification.md` for exact commands, observed output, passed checks, deployment parity, severity, and required remediation. The prior repair notes below are historical builder handoff material, not an acceptance verdict.
+
+# Private Call Captions — repair handoff (historical)
 
 ## Repair delivered
 

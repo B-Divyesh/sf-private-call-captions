@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Private Call Captions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "in.sociobot.private-call-captions",
   "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:5173", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
   "app": { "windows": [{ "title": "Private Call Captions", "width": 1120, "height": 790, "minWidth": 360, "minHeight": 570 }], "security": { "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'" } },

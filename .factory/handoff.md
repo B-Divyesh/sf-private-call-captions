@@ -30,7 +30,7 @@ Verified locally on 2026-08-28:
 
 `cargo check --manifest-path src-tauri/Cargo.toml` could not complete in this disposable worker because its host lacks `glib-2.0` development headers (`pkg-config` error). This is an environment dependency, not a source compile error; the release workflow uses `tauri-apps/tauri-action` on `ubuntu-22.04`, whose build environment supplies its Linux prerequisites. Run the check on a Tauri-ready workstation or CI as a final native verification.
 
-The v0.1.0 tag/release assets have not been created from this worker. After push, tag `v0.1.0` to trigger `.github/workflows/release.yml`; then verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs.
+The initial v0.1.0 workflow attempt did not create jobs before the portable YAML fix. The v0.1.1 tag triggers `.github/workflows/release.yml`; verify a downloaded asset against the release `SHA256SUMS` and confirm `latest.json` has real URLs before publishing the download site.
 
 Installers are intentionally unsigned. For production signing, add these repository secrets before release:
 

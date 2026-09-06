@@ -1,17 +1,19 @@
 {
   "name": "private-call-captions",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:desktop": "tauri dev",
     "build": "vite build && npm run build:site",
     "build:site": "vite build --config vite.site.config.ts",
-    "test": "npm run test:unit && npm run test:browser",
+    "test": "npm run typecheck && npm run test:unit && npm run test:browser",
     "test:unit": "vitest run",
     "test:browser": "playwright test",
+    "test:native": "cargo test --manifest-path src-tauri/Cargo.toml",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "tauri": "tauri"
   },
   "devDependencies": {

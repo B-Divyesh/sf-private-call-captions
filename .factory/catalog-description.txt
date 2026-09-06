@@ -1,0 +1,1 @@
+Read one chosen microphone as private captions without sending conversation audio to a caption service.

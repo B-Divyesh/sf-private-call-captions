@@ -1,8 +1,13 @@
 {
-  "navigationFallback": { "rewrite": "/404.html", "exclude": ["/assets/*", "/*.css", "/*.js", "/*.webp", "/*.png", "/*.svg"] },
+  "routes": [
+    { "route": "/assets/*", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
+    { "route": "/paper-caption-diorama-e7b07d77.webp", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
+    { "route": "/social-preview-58612a4a.webp", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } }
+  ],
+  "responseOverrides": { "404": { "rewrite": "/404.html" } },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Content-Security-Policy": "default-src 'self'; connect-src 'self' https://api.github.com https://api.sociobot.in; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    "Content-Security-Policy": "default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
   }
 }

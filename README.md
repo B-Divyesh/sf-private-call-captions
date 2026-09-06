@@ -7,12 +7,13 @@ It is deliberately not a meeting bot, recorder, cloud note taker, speaker identi
 ## What works
 
 - Local Whisper-compatible model transcription through the Tauri/Rust core
-- Explicit microphone selection; browser audio capture is microphone-only
+- Explicit consent and microphone selection before capture starts
+- One-second audio windows instead of four-second buffering
 - A resizable, high-contrast companion caption window
 - Correction hotkey: `Ctrl/⌘ + Shift + E`
 - In-memory session transcript and user-triggered TXT/CSV export
 - Consent/limitations guidance before a session
-- Download site with OS-aware release links, checksum-verified install scripts, and local license restore
+- Download site with OS-aware release links and checksum-verified install scripts
 
 The app ships no speech model. Select a GGML/GGUF Whisper-compatible local model file in the app. This keeps a potentially large model out of the installer and leaves model choice/license review with the operator. Review the license for any model you obtain before use; do not assume a third-party converted model has the same terms as Whisper source code. The app uses `whisper-rs` and does not download models itself.
 
@@ -21,10 +22,11 @@ The app ships no speech model. Select a GGML/GGUF Whisper-compatible local model
 Requirements: Node 22+, Rust stable, and the system prerequisites for [Tauri 2](https://v2.tauri.app/start/prerequisites/). No runtime CDN or third-party script is used.
 
 ```sh
-npm install
+npm ci
 npm run dev              # browser UI preview
 npm run dev:desktop      # local Tauri app
 npm test
+npm run test:native
 npm run build            # desktop web assets -> dist/, download site -> dist/site/
 ```
 
@@ -44,11 +46,13 @@ curl -fsSL https://private-call-captions.sociobot.in/install.sh | sh
 irm https://private-call-captions.sociobot.in/install.ps1 | iex
 ```
 
-Both scripts check the release checksum before opening an installer. Builds are unsigned until the operator provides signing certificates; on macOS use right-click → Open for an unsigned build, and inspect the Windows warning before proceeding.
+Both scripts check the release checksum. Linux installs the verified AppImage in `$HOME/.local/bin` by default. macOS and Windows open their verified installers. Builds remain unsigned until the operator provides signing certificates.
 
 ## Privacy and commercial terms
 
-See [`/privacy`](privacy/index.html) and [`/terms`](terms/index.html). A future visual-customization unlock is one-time via Sociobot/Dodo; captions, export, and safety guidance are free. License tokens are stored only in local storage and verified against Sociobot at most daily when online.
+See [`/privacy`](privacy/index.html) and [`/terms`](terms/index.html). Captions, corrections, export, and safety guidance are free. Personal caption colors and type sizes remain reserved for a future one-time purchase.
+
+No paid offer is registered today. The website takes no payment and shows no checkout link. An exact price and restore flow must be added only after the Sociobot billing operator registers the offer.
 
 ## License
 

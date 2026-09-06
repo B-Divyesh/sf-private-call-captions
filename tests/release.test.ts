@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { RELEASE_API, RELEASE_CACHE_KEY, getLatestRelease, readRelease } from '../site/src/release';
+import { createServer } from 'node:http';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { RELEASE_API, RELEASE_CACHE_KEY, detectedPlatform, getLatestRelease, readRelease } from '../site/src/release';
+import { createReleaseMetadata } from '../scripts/create-release-metadata.mjs';
+
+const execFileAsync = promisify(execFile);
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -42,5 +51,52 @@ describe('GitHub release metadata', () => {
   it('returns a calm empty result when GitHub is unavailable', async () => {
     const result = await getLatestRelease(async () => { throw new TypeError('Failed to fetch'); }, new MemoryStorage() as unknown as Storage, 1000);
     expect(result).toEqual({ release: null, source: 'none' });
+  });
+
+  it('does not offer a desktop installer directly to a phone', () => {
+    expect(detectedPlatform('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile')).toBe('mobile');
+    expect(detectedPlatform('Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile')).toBe('mobile');
+  });
+
+  it('@claim:installer-integrity creates exact release URLs and installs a checksum-matched Linux artifact', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'pcc-release-'));
+    const installDirectory = join(directory, 'installed');
+    const files = [
+      'private-call-captions-0.1.5-macos-arm64.dmg',
+      'private-call-captions-0.1.5-macos-x64.dmg',
+      'private-call-captions-0.1.5-windows.msi',
+      'private-call-captions-0.1.5-linux.AppImage',
+      'private-call-captions-0.1.5-linux.deb',
+    ];
+    try {
+      await Promise.all(files.map((name) => writeFile(join(directory, name), `installer:${name}`)));
+      const { manifest, checksumLines } = await createReleaseMetadata(directory, 'v0.1.5', 'B-Divyesh/sf-private-call-captions');
+      expect(manifest.platforms.linux.url.endsWith('/private-call-captions-0.1.5-linux.AppImage')).toBe(true);
+      expect(manifest.platforms['macos-arm64'].url.endsWith('/private-call-captions-0.1.5-macos-arm64.dmg')).toBe(true);
+      expect(checksumLines).toHaveLength(files.length);
+      expect(checksumLines.every((line) => !line.includes('release/'))).toBe(true);
+
+      const server = createServer(async (request, response) => {
+        try {
+          const name = decodeURIComponent(new URL(request.url ?? '/', 'http://127.0.0.1').pathname.slice(1));
+          response.end(await readFile(join(directory, name)));
+        } catch { response.writeHead(404).end(); }
+      });
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Test release server did not start.');
+      const base = `http://127.0.0.1:${address.port}`;
+      try {
+        const result = await execFileAsync('sh', ['public/install.sh'], { cwd: process.cwd(), env: {
+          ...process.env,
+          PCC_RELEASE_BASE: base,
+          PCC_ASSET_BASE: base,
+          PCC_INSTALL_DIR: installDirectory,
+        } });
+        expect(result.stdout).toContain('private-call-captions-0.1.5-linux.AppImage: OK');
+        expect(result.stdout).toContain('Installed Private Call Captions');
+        expect(await readFile(join(installDirectory, 'private-call-captions'), 'utf8')).toBe('installer:private-call-captions-0.1.5-linux.AppImage');
+      } finally { await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); }
+    } finally { await rm(directory, { recursive: true, force: true }); }
   });
 });

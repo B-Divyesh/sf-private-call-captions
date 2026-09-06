@@ -3,6 +3,7 @@ export const RELEASE_CACHE_KEY = 'pcc:release-metadata:v1';
 export const RELEASE_CACHE_MS = 60 * 60 * 1000;
 
 export type Platform = 'macos-arm64' | 'macos-x64' | 'windows' | 'linux';
+export type DetectedPlatform = Platform | 'mobile';
 export type ReleaseAsset = { name: string; browser_download_url: string };
 export type GitHubRelease = {
   tag_name: string;
@@ -63,8 +64,9 @@ export async function getLatestRelease(
   }
 }
 
-export function detectedPlatform(userAgent = navigator.userAgent) : Platform {
+export function detectedPlatform(userAgent = navigator.userAgent): DetectedPlatform {
   const agent = userAgent.toLowerCase();
+  if (/iphone|ipad|ipod|android|mobile/.test(agent)) return 'mobile';
   if (agent.includes('win')) return 'windows';
   if (agent.includes('mac')) return /arm|aarch64/.test(agent) ? 'macos-arm64' : 'macos-x64';
   return 'linux';

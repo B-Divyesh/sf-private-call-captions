@@ -49,7 +49,34 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          find src-tauri/target/${{ matrix.target }}/release/bundle -type f \( -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) -exec cp {} release/ \;
+          version="$(node -p "require('./package.json').version")"
+          while IFS= read -r -d '' source; do
+            case "$source" in
+              *.AppImage) extension="AppImage" ;;
+              *) extension="${source##*.}" ;;
+            esac
+            cp "$source" "release/private-call-captions-${version}-${{ matrix.name }}.${extension}"
+          done < <(find "src-tauri/target/${{ matrix.target }}/release/bundle" -type f \( -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) -print0)
+      - name: Test Windows checksum installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $fixture = Join-Path $env:RUNNER_TEMP 'pcc-installer-test'
+          New-Item -ItemType Directory -Force -Path $fixture | Out-Null
+          $asset = Get-ChildItem 'release/*-windows.msi' | Select-Object -First 1
+          Copy-Item $asset.FullName $fixture
+          $name = $asset.Name
+          $hash = (Get-FileHash (Join-Path $fixture $name) -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name" | Set-Content -Encoding ascii (Join-Path $fixture 'SHA256SUMS')
+          @{ platforms = @{ windows = @{ url = "https://example.invalid/$name" } } } | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 (Join-Path $fixture 'latest.json')
+          $server = Start-Process python -ArgumentList '-m','http.server','8765','--bind','127.0.0.1','--directory',$fixture -PassThru
+          try {
+            Start-Sleep -Seconds 1
+            $env:PCC_RELEASE_BASE = 'http://127.0.0.1:8765'
+            $env:PCC_ASSET_BASE = 'http://127.0.0.1:8765'
+            $env:PCC_INSTALLER_NO_OPEN = '1'
+            ./public/install.ps1
+          } finally { Stop-Process -Id $server.Id -Force }
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
@@ -59,25 +86,26 @@ jobs:
     needs: bundle
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: release
+          merge-multiple: true
       - name: Build checksums and download manifest
         env:
           TAG: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
         run: |
-          find release -type f -exec mv {} release/ \; 2>/dev/null || true
-          find release -maxdepth 1 -type f -print0 | xargs -0 sha256sum > release/SHA256SUMS
-          python3 - <<'PY'
-          import json, os, glob
-          tag, repo = os.environ['TAG'], os.environ['REPO']; base=f'https://github.com/{repo}/releases/download/{tag}/'
-          files=[os.path.basename(x) for x in glob.glob('release/*')]
-          find=lambda needles: next((base+x for x in files if any(n.lower() in x.lower() for n in needles)), None)
-          data={'version':tag.lstrip('v'),'platforms':{'macos-arm64':{'url':find(['aarch64','.dmg']) or find(['.dmg'])},'macos-x64':{'url':find(['x64','.dmg']) or find(['.dmg'])},'windows':{'url':find(['.msi']) or find(['.exe'])},'linux':{'url':find(['.appimage']) or find(['.deb'])}}}
-          if not all(x['url'] for x in data['platforms'].values()): raise SystemExit('A required installer asset is missing')
-          open('release/latest.json','w').write(json.dumps(data,indent=2))
-          PY
+          node scripts/create-release-metadata.mjs release "$TAG" "$REPO"
+      - name: Test Linux checksum installer
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory release >/tmp/pcc-release-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          sleep 1
+          install_dir="$(mktemp -d)"
+          PCC_RELEASE_BASE=http://127.0.0.1:8765 PCC_ASSET_BASE=http://127.0.0.1:8765 PCC_INSTALL_DIR="$install_dir" sh public/install.sh
+          test -x "$install_dir/private-call-captions"
       - uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true

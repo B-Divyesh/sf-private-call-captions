@@ -1,4 +1,4 @@
-const CACHE = 'pcc-site-v2';
+const CACHE = 'pcc-site-v3';
 const PAGES = ['/', '/demo/', '/privacy/', '/terms/'];
 async function precache() {
   const cache = await caches.open(CACHE);
@@ -8,10 +8,14 @@ async function precache() {
     return response.text();
   }));
   const assets = pages.flatMap(page => [...page.matchAll(/(?:src|href)="(\/assets\/[^"?]+)"/g)].map(match => match[1]));
-  await cache.addAll([...new Set([...assets, '/favicon.svg', '/paper-caption-diorama.webp'])]);
+  await cache.addAll([...new Set([...assets, '/favicon.svg', '/paper-caption-diorama-e7b07d77.webp'])]);
 }
 self.addEventListener('install', event => event.waitUntil(precache().then(() => self.skipWaiting())));
-self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('activate', event => event.waitUntil((async () => {
+  const names = await caches.keys();
+  await Promise.all(names.filter(name => name.startsWith('pcc-site-') && name !== CACHE).map(name => caches.delete(name)));
+  await self.clients.claim();
+})()));
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith((async () => {

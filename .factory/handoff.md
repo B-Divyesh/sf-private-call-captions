@@ -2,7 +2,7 @@
 
 ## Status
 
-The repaired implementation is commit `6459b9376826c24ac7ec945528890e93b0a15f3e` and tag `v0.1.6`. The documentation commit is recorded in a final metadata amendment after this handoff body. The static site was deployed from this implementation as Azure Static Web Apps deployment `632ec8d9-7b0a-4a60-ab05-0558d118b791`.
+The repaired implementation is commit `6459b9376826c24ac7ec945528890e93b0a15f3e` and tag `v0.1.6`. The completed verification and handoff body is documentation commit `eb844223df0031664f7045159008b4c7ce23bae5`; the current amendment only records that immutable SHA. The static site was deployed from the implementation as Azure Static Web Apps deployment `632ec8d9-7b0a-4a60-ab05-0558d118b791`.
 
 ## Repairs
 

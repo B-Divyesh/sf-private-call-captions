@@ -68,7 +68,7 @@ jobs:
           $name = $asset.Name
           $hash = (Get-FileHash (Join-Path $fixture $name) -Algorithm SHA256).Hash.ToLower()
           "$hash  $name" | Set-Content -Encoding ascii (Join-Path $fixture 'SHA256SUMS')
-          @{ platforms = @{ windows = @{ url = "https://example.invalid/$name" } } } | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 (Join-Path $fixture 'latest.json')
+          @{ platforms = @{ windows = @{ file = $name; url = "https://example.invalid/$name" } } } | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 (Join-Path $fixture 'latest.json')
           $server = Start-Process python -ArgumentList '-m','http.server','8765','--bind','127.0.0.1','--directory',$fixture -PassThru
           try {
             Start-Sleep -Seconds 1

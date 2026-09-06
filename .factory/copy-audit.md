@@ -11,12 +11,21 @@ The landing page was checked 6 September 2026. Every sentence is 22 words or few
 | No account | 2 |
 | No call recording | 3 |
 | Free captions and exports | 4 |
+| Finding your download… | 3 |
+| Checking available downloads… | 3 |
+| View downloads on GitHub | 4 |
+| Download for Linux | 3 |
+| Download for Windows | 3 |
+| Download for macOS (Apple silicon) | 5 |
+| Download for macOS (Intel) | 5 |
 | Install the app on a Mac, Windows, or Linux computer. | 10 |
 | View desktop downloads | 3 |
-| Version 0.1.5. | 2 |
+| Version 0.1.6. | 2 |
 | Installers are unsigned; read the install notes below. | 8 |
 | Downloads are being published. | 4 |
+| The desktop release page will list each installer. | 8 |
 | The GitHub release page lists each installer when it is ready. | 11 |
+| “Please repeat the building number.” | 5 |
 | Large words stay beside your call | 6 |
 | Choose your microphone. | 3 |
 | Choose a local speech model. | 5 |

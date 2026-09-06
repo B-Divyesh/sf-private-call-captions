@@ -1,5 +1,11 @@
 # Private Call Captions — repair handoff
 
+## Verification 2 outcome (6 September 2026)
+
+Independent verification reviewed implementation `6459b9376826c24ac7ec945528890e93b0a15f3e`; documentation HEAD was `0bed0657d81100539f9cc118fe5841bb4ee2c4d2`. The live HTML exactly matched the candidate build, all nine claim commands passed, the live desktop/phone/demo/offline/accessibility/release checks passed, and a clean Linux consumer install launched the AppImage.
+
+**Verification verdict: FAIL.** One Medium documentation finding remains: the README's documented Linux Tauri prerequisites omit `libclang-dev` and `cmake`, both required by this product's Whisper binding for `npm run test:native`. A clean developer following the documented setup cannot run that command until those packages are installed. See `.factory/verification-2.md` for complete evidence and remediation.
+
 ## Status
 
 The repaired implementation is commit `6459b9376826c24ac7ec945528890e93b0a15f3e` and tag `v0.1.6`. The completed verification and handoff body is documentation commit `eb844223df0031664f7045159008b4c7ce23bae5`; the current amendment only records that immutable SHA. The static site was deployed from the implementation as Azure Static Web Apps deployment `632ec8d9-7b0a-4a60-ab05-0558d118b791`.
